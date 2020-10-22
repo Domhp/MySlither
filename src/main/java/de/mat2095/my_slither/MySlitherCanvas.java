@@ -15,26 +15,27 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import javax.swing.*;
 
+import java.io.*;
 
 final class MySlitherCanvas extends JPanel {
 
-    private static final Color BACKGROUND_COLOR = new Color(0x2B2B2B);
-    private static final Color FOREGROUND_COLOR = new Color(0xA9B7C6);
-    private static final Color SECTOR_COLOR = new Color(0x803C3F41, true);
-    private static final Color FOOD_COLOR = new Color(0xCC7832);
-    private static final Color PREY_COLOR = new Color(0xFFFF00);
+    private Color BACKGROUND_COLOR = new Color(0xE9967A);
+    private Color FOREGROUND_COLOR = new Color(0xcc3311);
+    private Color SECTOR_COLOR = new Color(0x803C3F41, true);
+    private Color FOOD_COLOR = new Color(0xCC7832);
+    private Color PREY_COLOR = new Color(0xFFFF00);
     private static final float[] PREY_HALO_FRACTIONS = new float[]{0.5f, 1f};
     private static final Color[] PREY_HALO_COLORS = new Color[]{new Color(0x60FFFF00, true), new Color(0x00FFFF00, true)};
-    private static final Color SNAKE_COLOR = new Color(0x287BDE);
-    private static final Color OWN_SNAKE_COLOR = new Color(0x39AFFF);
+    private Color SNAKE_COLOR = new Color(0x287BDE);
+    private Color OWN_SNAKE_COLOR = new Color(0x39AFFF);
     private static final float[] SNAKE_HALO_FRACTIONS = new float[]{0.5f, 1f};
     private static final Color[] SNAKE_HALO_COLORS = new Color[]{new Color(0x60287BDE, true), new Color(0x00287BDE, true)};
     private static final Color[] OWN_SNAKE_HALO_COLORS = new Color[]{new Color(0x6039AFFF, true), new Color(0x0039AFFF, true)};
-    private static final Color SNAKE_BODY_COLOR = new Color(0x6A8759);
-    private static final Color OWN_SNAKE_BODY_COLOR = new Color(0xA5C261);
-    private static final Color MAP_COLOR = new Color(0xA0A9B7C6, true);
+    private Color SNAKE_BODY_COLOR = new Color(0x6A8759);
+    private Color OWN_SNAKE_BODY_COLOR = new Color(0xA5C261);
+    private Color MAP_COLOR = new Color(0xA0A9B7C6, true);
     private static final Color MAP_POSITION_COLOR = new Color(0xE09E2927, true);
-    private static final Color NAME_SHADOW_COLOR = new Color(0xC02B2B2B, true);
+    private Color NAME_SHADOW_COLOR = new Color(0xC02B2B2B, true);
     private static final Font NAME_FONT = Font.decode("SansSerif-BOLD");
     private static final Font DEBUG_FONT = Font.decode("SansSerif-PLAIN-12");
 
@@ -71,6 +72,8 @@ final class MySlitherCanvas extends JPanel {
     MySlitherCanvas(MySlitherJFrame view) {
         super();
         this.view = view;
+        //New Code for opening file and changing default colours
+        setColourTol_muted();
 
         setBackground(BACKGROUND_COLOR);
         setForeground(FOREGROUND_COLOR);
@@ -121,7 +124,33 @@ final class MySlitherCanvas extends JPanel {
         repaintThread = Executors.newSingleThreadScheduledExecutor();
         repaintThread.scheduleAtFixedRate(this::repaint, 1, repaintDelay, TimeUnit.NANOSECONDS);
     }
+    /*Adding colour blind option*/
+    private void setColourTol_muted()
+    {
+        int[] arrayOfCols = new int[10];
 
+        try {
+            FileReader f = new FileReader("config.txt");
+            BufferedReader b = new BufferedReader(f);
+            String s="";
+            for(int i = 0; i < arrayOfCols.length; i++){
+                s = b.readLine();
+                arrayOfCols[i] = Integer.valueOf(s);
+            }
+        }
+        catch (Exception e) {
+            System.out.println(e);
+        }
+        BACKGROUND_COLOR = new Color(arrayOfCols[5]); //grey
+        FOOD_COLOR = new Color(arrayOfCols[6]);
+        PREY_COLOR = new Color(arrayOfCols[7]);
+        OWN_SNAKE_COLOR = new Color(arrayOfCols[3]);
+        SNAKE_COLOR = new Color(arrayOfCols[2]);
+        SNAKE_BODY_COLOR = new Color(arrayOfCols[1]);
+        OWN_SNAKE_BODY_COLOR = new Color(arrayOfCols[4]);
+        SECTOR_COLOR = new Color(arrayOfCols[9]);
+        NAME_SHADOW_COLOR = new Color(0x00000000, true); //Invisible
+    }
     void setMap(boolean[] map) {
         this.map = map;
     }
