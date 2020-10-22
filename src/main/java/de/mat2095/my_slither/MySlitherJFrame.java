@@ -1,91 +1,36 @@
 package de.mat2095.my_slither;
 
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.awt.event.*;
+import java.io.*;
+import java.net.*;
+import java.util.*;
 import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
-import javax.swing.*;
-import javax.swing.event.AncestorEvent;
-import javax.swing.event.AncestorListener;
-import javax.swing.table.DefaultTableCellRenderer;
+import java.util.concurrent.*;
 
+import javax.swing.*;
+import javax.swing.event.*;
+import javax.swing.filechooser.*;
+import javax.swing.table.*;
 
 final class MySlitherJFrame extends JFrame {
 
-    private static final String[] SNAKES = {
-        "00 - purple",
-        "01 - blue",
-        "02 - cyan",
-        "03 - green",
-        "04 - yellow",
-        "05 - orange",
-        "06 - salmon",
-        "07 - red",
-        "08 - violet",
-        "09 - flag: USA",
-        "10 - flag: Russia",
-        "11 - flag: Germany",
-        "12 - flag: Italy",
-        "13 - flag: France",
-        "14 - white/red",
-        "15 - rainbow",
-        "16 - blue/yellow",
-        "17 - white/blue",
-        "18 - red/white",
-        "19 - white",
-        "20 - green/purple",
-        "21 - flag: Brazil",
-        "22 - flag: Ireland",
-        "23 - flag: Romania",
-        "24 - cyan/yellow +extra",
-        "25 - purple/orange +extra",
-        "26 - grey/brown",
-        "27 - green with eye",
-        "28 - yellow/green/red",
-        "29 - black/yellow",
-        "30 - stars/EU",
-        "31 - stars",
-        "32 - EU",
-        "33 - yellow/black",
-        "34 - colorful",
-        "35 - red/white/pink",
-        "36 - blue/white/light-blue",
-        "37 - Kwebbelkop",
-        "38 - yellow",
-        "39 - PewDiePie",
-        "40 - green happy",
-        "41 - red with eyes",
-        "42 - Google Play",
-        "43 - UK",
-        "44 - Ghost",
-        "45 - Canada",
-        "46 - Swiss",
-        "47 - Moldova",
-        "48 - Vietnam",
-        "49 - Argentina",
-        "50 - Colombia",
-        "51 - Thailand",
-        "52 - red/yellow",
-        "53 - glowy-blue",
-        "54 - glowy-red",
-        "55 - glowy-yellow",
-        "56 - glowy-orange",
-        "57 - glowy-purple",
-        "58 - glowy-green",
-        "59 - yellow-M",
-        "60 - detailed UK",
-        "61 - glowy-colorful",
-        "62 - purple spiral",
-        "63 - red/black",
-        "64 - blue/black"
-    };
+    private static final String[] SNAKES = { "00 - purple", "01 - blue", "02 - cyan", "03 - green", "04 - yellow",
+            "05 - orange", "06 - salmon", "07 - red", "08 - violet", "09 - flag: USA", "10 - flag: Russia",
+            "11 - flag: Germany", "12 - flag: Italy", "13 - flag: France", "14 - white/red", "15 - rainbow",
+            "16 - blue/yellow", "17 - white/blue", "18 - red/white", "19 - white", "20 - green/purple",
+            "21 - flag: Brazil", "22 - flag: Ireland", "23 - flag: Romania", "24 - cyan/yellow +extra",
+            "25 - purple/orange +extra", "26 - grey/brown", "27 - green with eye", "28 - yellow/green/red",
+            "29 - black/yellow", "30 - stars/EU", "31 - stars", "32 - EU", "33 - yellow/black", "34 - colorful",
+            "35 - red/white/pink", "36 - blue/white/light-blue", "37 - Kwebbelkop", "38 - yellow", "39 - PewDiePie",
+            "40 - green happy", "41 - red with eyes", "42 - Google Play", "43 - UK", "44 - Ghost", "45 - Canada",
+            "46 - Swiss", "47 - Moldova", "48 - Vietnam", "49 - Argentina", "50 - Colombia", "51 - Thailand",
+            "52 - red/yellow", "53 - glowy-blue", "54 - glowy-red", "55 - glowy-yellow", "56 - glowy-orange",
+            "57 - glowy-purple", "58 - glowy-green", "59 - yellow-M", "60 - detailed UK", "61 - glowy-colorful",
+            "62 - purple spiral", "63 - red/black", "64 - blue/black" };
 
-    // TODO: skins, prey-size, snake-length/width, bot-layer, that-other-thing(?), show ping
+    // TODO: skins, prey-size, snake-length/width, bot-layer, that-other-thing(?),
+    // show ping
 
     private final JTextField server, name;
     private final JComboBox<String> snake;
@@ -136,7 +81,54 @@ final class MySlitherJFrame extends JFrame {
 
         server = new JTextField(18);
 
-        name = new JTextField("MySlitherEaterBot", 16);
+        File saveData = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()
+                + "\\My Games\\My Slither\\MySlitherSaveData.txt");
+        String username = "";
+        try (Scanner dataReader = new Scanner(saveData)) {
+            // System.out.println("File Exists");
+            while (dataReader.hasNextLine() && username == "") {
+                String data = dataReader.nextLine();
+                // System.out.println(data);
+                if (data.contains("name=")) {
+                    username = data.substring(5, data.length());
+                    log("Username Found: " + username);
+                }
+            }
+            dataReader.close();
+        } catch (FileNotFoundException notFoundError) {
+            log("SaveData File Does Not Exist");
+            log("Creating SaveData File");
+            saveData = new File(
+                    FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "\\My Games\\My Slither");
+            try {
+                if (saveData.mkdir()) {
+                    log("Directory Created");
+                } else {
+                    log("Failed to Create Directory");
+                    log("Directory: " + saveData.getPath());
+                }
+                saveData = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()
+                        + "\\My Games\\My Slither\\MySlitherSaveData.txt");
+                if (saveData.createNewFile()) {
+                    log("Created SaveData File");
+                } else {
+                    log("Failed To Make File");
+                }
+            } catch (IOException e) {
+                log("Error: Could not create SaveData file");
+                // print(e.printStackTrace());
+                System.out.println("Error: Could not create SaveData file");
+                e.printStackTrace();
+            }
+            try {
+                FileWriter dataWriter = new FileWriter(saveData);
+                dataWriter.write("name=MySlitherEaterBot");
+                dataWriter.close();
+            } catch (Exception e) {
+                System.out.println("Error: Could not write To SaveData file");
+            }
+        }
+        name = new JTextField(username, 16);
 
         snake = new JComboBox<>(SNAKES);
         snake.setMaximumRowCount(snake.getItemCount());
@@ -161,6 +153,7 @@ final class MySlitherJFrame extends JFrame {
             }
         });
         connect.addAncestorListener(new AncestorListener() {
+
             @Override
             public void ancestorAdded(AncestorEvent event) {
                 connect.requestFocusInWindow();
@@ -180,39 +173,40 @@ final class MySlitherJFrame extends JFrame {
 
         kills = new JLabel();
 
-        settings.add(new JLabel("server:"),
-            new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(server,
-            new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(new JLabel("name:"),
-            new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(name,
-            new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(new JLabel("skin:"),
-            new GridBagConstraints(0, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(snake,
-            new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(useRandomServer,
-            new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(connect,
-            new GridBagConstraints(2, 1, 1, 2, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(new JSeparator(SwingConstants.VERTICAL),
-            new GridBagConstraints(3, 0, 1, 3, 0, 0, GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 6, 0, 6), 0, 0));
-        settings.add(new JLabel("kills:"),
-            new GridBagConstraints(4, 1, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(kills,
-            new GridBagConstraints(5, 1, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(new JLabel("rank:"),
-            new GridBagConstraints(4, 2, 1, 1, 0, 0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
-        settings.add(rank,
-            new GridBagConstraints(5, 2, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(new JLabel("server:"), new GridBagConstraints(0, 0, 1, 1, 0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(server, new GridBagConstraints(1, 0, 1, 1, 0, 0, GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(new JLabel("name:"), new GridBagConstraints(0, 1, 1, 1, 0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(name, new GridBagConstraints(1, 1, 1, 1, 0, 0, GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(new JLabel("skin:"), new GridBagConstraints(0, 2, 1, 1, 0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(snake, new GridBagConstraints(1, 2, 1, 1, 0, 0, GridBagConstraints.CENTER,
+                GridBagConstraints.HORIZONTAL, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(useRandomServer, new GridBagConstraints(2, 0, 1, 1, 0, 0, GridBagConstraints.CENTER,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(connect, new GridBagConstraints(2, 1, 1, 2, 0, 0, GridBagConstraints.CENTER,
+                GridBagConstraints.BOTH, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(new JSeparator(SwingConstants.VERTICAL), new GridBagConstraints(3, 0, 1, 3, 0, 0,
+                GridBagConstraints.CENTER, GridBagConstraints.BOTH, new Insets(0, 6, 0, 6), 0, 0));
+        settings.add(new JLabel("kills:"), new GridBagConstraints(4, 1, 1, 1, 0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(kills, new GridBagConstraints(5, 1, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE,
+                new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(new JLabel("rank:"), new GridBagConstraints(4, 2, 1, 1, 0, 0, GridBagConstraints.EAST,
+                GridBagConstraints.NONE, new Insets(2, 2, 2, 2), 0, 0));
+        settings.add(rank, new GridBagConstraints(5, 2, 1, 1, 0, 0, GridBagConstraints.WEST, GridBagConstraints.NONE,
+                new Insets(2, 2, 2, 2), 0, 0));
 
         JComponent upperRow = new JPanel(new FlowLayout(FlowLayout.LEFT));
         upperRow.add(settings);
+
         getContentPane().add(upperRow, BorderLayout.NORTH);
 
         // === center ===
-        log = new JTextArea("hi");
+        log = new JTextArea("Console Output");
         log.setEditable(false);
         log.setLineWrap(true);
         log.setFont(Font.decode("Monospaced 11"));
@@ -249,7 +243,8 @@ final class MySlitherJFrame extends JFrame {
         DefaultTableCellRenderer rightRenderer = new DefaultTableCellRenderer();
         rightRenderer.setHorizontalAlignment(SwingConstants.RIGHT);
         highscoreList.getColumnModel().getColumn(0).setCellRenderer(rightRenderer);
-        highscoreList.setPreferredScrollableViewportSize(new Dimension(64 + 192, highscoreList.getPreferredSize().height));
+        highscoreList
+                .setPreferredScrollableViewportSize(new Dimension(64 + 192, highscoreList.getPreferredSize().height));
 
         // == split-panes ==
         rightSplitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, true, canvas, new JScrollPane(highscoreList));
@@ -388,6 +383,19 @@ final class MySlitherJFrame extends JFrame {
         useRandomServer.setEnabled(status.allowModifyData);
         name.setEnabled(status.allowModifyData);
         snake.setEnabled(status.allowModifyData);
+        // If status is connecting (i.e. the conntect button has been pressed), save the
+        // name in the text field.
+        if (newStatus == status.CONNECTING) {
+            File saveData = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()
+                    + "\\My Games\\My Slither\\MySlitherSaveData.txt");
+            try {
+                FileWriter dataWriter = new FileWriter(saveData);
+                dataWriter.write("name=" + name.getText());
+                dataWriter.close();
+            } catch (Exception e) {
+                log("Error: Could not save name To SaveData file");
+            }
+        }
     }
 
     void log(String text) {
@@ -396,7 +404,8 @@ final class MySlitherJFrame extends JFrame {
 
     private void print(String text) {
         SwingUtilities.invokeLater(() -> {
-            boolean scrollToBottom = !logScrollBar.getValueIsAdjusting() && logScrollBar.getValue() >= logScrollBar.getMaximum() - logScrollBar.getVisibleAmount();
+            boolean scrollToBottom = !logScrollBar.getValueIsAdjusting()
+                    && logScrollBar.getValue() >= logScrollBar.getMaximum() - logScrollBar.getVisibleAmount();
             log.append('\n' + text);
             fullSplitPane.getLeftComponent().validate();
             if (scrollToBottom) {
@@ -431,10 +440,8 @@ final class MySlitherJFrame extends JFrame {
     }
 
     private enum Status {
-        DISCONNECTED("connect", false, true, true),
-        CONNECTING("connecting...", true, true, false),
-        CONNECTED("disconnect", true, true, false),
-        DISCONNECTING("disconnecting...", false, false, false);
+        DISCONNECTED("connect", false, true, true), CONNECTING("connecting...", true, true, false),
+        CONNECTED("disconnect", true, true, false), DISCONNECTING("disconnecting...", false, false, false);
 
         private final String buttonText;
         private final boolean buttonSelected, buttonEnabled;

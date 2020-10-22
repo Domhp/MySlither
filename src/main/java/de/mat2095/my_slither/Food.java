@@ -1,6 +1,5 @@
 package de.mat2095.my_slither;
 
-
 class Food {
 
     final int x, y;
@@ -11,7 +10,7 @@ class Food {
     Food(int x, int y, double size, boolean fastSpawn) {
         this.x = x;
         this.y = y;
-        this.size = size;
+        this.size = size * 1;
         this.rsp = fastSpawn ? 4 : 1;
         spawnTime = System.currentTimeMillis();
     }
