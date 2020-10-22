@@ -84,6 +84,7 @@ final class MySlitherJFrame extends JFrame {
         File saveData = new File(FileSystemView.getFileSystemView().getDefaultDirectory().getPath()
                 + "\\My Games\\My Slither\\MySlitherSaveData.txt");
         String username = "";
+        // Open File. If it doesnt exist, create it.
         try (Scanner dataReader = new Scanner(saveData)) {
             // System.out.println("File Exists");
             while (dataReader.hasNextLine() && username == "") {
@@ -98,6 +99,7 @@ final class MySlitherJFrame extends JFrame {
         } catch (FileNotFoundException notFoundError) {
             log("SaveData File Does Not Exist");
             log("Creating SaveData File");
+            // Need to create DIR and file separateley otherwise it doesn't work.
             saveData = new File(
                     FileSystemView.getFileSystemView().getDefaultDirectory().getPath() + "\\My Games\\My Slither");
             try {
